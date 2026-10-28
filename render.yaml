@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: clinical-hims-demo
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: clinical-hims-db
+          property: connectionString
+databases:
+  - name: clinical-hims-db
+    databaseName: clinical_hims
+    user: clinical_hims_user
