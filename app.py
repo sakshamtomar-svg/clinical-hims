@@ -102,7 +102,7 @@ def login():
             return redirect(url_for("dashboard"))
         flash("Login failed. Check username and password.")
     return page("""<section class="formcard" style="max-width:500px;margin:auto"><h1>Sign in</h1>
-    <form method="post">{{ csrf_token() }}<label>Username</label><input name="username" required autocomplete="username">
+    <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token( ) }}"><label>Username</label><input name="username" required autocomplete="username">
     <label>Password</label><input name="password" type="password" required autocomplete="current-password">
     <button type="submit">Log in</button></form><p class="muted">Demo accounts are created by the site administrator.</p></section>""")
 
@@ -120,12 +120,12 @@ def dashboard():
         p = Patient.query.filter_by(user_id=u.id).first()
         rows = Appointment.query.filter_by(patient_id=p.id).order_by(Appointment.start).all() if p else []
     html = """<h1 style="font-size:2.5rem">Dashboard</h1><p>Signed in as <b>{{u.username}}</b> · Role: {{u.role}}</p>
-    {% if u.role == 'patient' %}<section class="card"><h2>Book an appointment</h2><form method="post" action="/appointments/new">{{ csrf_token() }}
+    {% if u.role == 'patient' %}<section class="card"><h2>Book an appointment</h2><form method="post" action="/appointments/new"><input type="hidden" name="csrf_token" value="{{ csrf_token( ) }}">
     <label>Date and time</label><input name="start" type="datetime-local" required><label>Reason (demo only)</label><input name="reason" maxlength="250">
     <button>Confirm booking</button></form></section>{% endif %}
     <section class="card"><h2>Appointments ({{rows|length}})</h2>{% if rows %}<div class="tablewrap"><table><tr><th>Patient ID</th><th>Patient</th><th>Date/time</th><th>Reason</th><th>Status</th>{% if u.role in ['clinic','admin'] %}<th>Update</th>{% endif %}</tr>
     {% for a in rows %}<tr><td>{{a.patient.identifier}}</td><td>{{a.patient.given_name}} {{a.patient.family_name}}</td><td>{{a.start}}</td><td>{{a.reason or '—'}}</td><td>{{a.status}}</td>
-    {% if u.role in ['clinic','admin'] %}<td><form method="post" action="/appointments/{{a.id}}/status">{{ csrf_token() }}<select name="status">{% for s in ['booked','arrived','in-progress','fulfilled','cancelled'] %}<option {% if a.status==s %}selected{% endif %}>{{s}}</option>{% endfor %}</select><button>Save</button></form></td>{% endif %}</tr>{% endfor %}</table></div>{% else %}<p class="muted">No appointments yet.</p>{% endif %}</section>"""
+    {% if u.role in ['clinic','admin'] %}<td><form method="post" action="/appointments/{{a.id}}/status"><input type="hidden" name="csrf_token" value="{{ csrf_token( ) }}"><select name="status">{% for s in ['booked','arrived','in-progress','fulfilled','cancelled'] %}<option {% if a.status==s %}selected{% endif %}>{{s}}</option>{% endfor %}</select><button>Save</button></form></td>{% endif %}</tr>{% endfor %}</table></div>{% else %}<p class="muted">No appointments yet.</p>{% endif %}</section>"""
     return page(html, u=u, rows=rows)
 
 @app.route("/appointments/new", methods=["POST"])
