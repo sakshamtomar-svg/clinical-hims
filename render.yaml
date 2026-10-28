@@ -3,7 +3,7 @@ services:
     name: clinical-hims-demo
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: flask --app app init-demo && gunicorn app:app 
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.8
