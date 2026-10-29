@@ -399,10 +399,21 @@ def emr_records():
 @app.cli.command("init-demo")
 def init_demo():
     db.create_all()
-    for uname, pwd, role in [
-        ("demo_patient", "PatientDemo-ChangeMe!", "patient"),
-        ("demo_clinic", "ClinicDemo-ChangeMe!", "clinic"),
-        ("demo_lab", "LabDemo-ChangeMe!", "lab")]:
+   for uname, pwd, role in [
+    ("demo_patient", "PatientDemo-ChangeMe!", "patient"),
+    ("demo_clinic", "ClinicDemo-ChangeMe!", "clinic"),
+    ("demo_lab", "LabDemo-ChangeMe!", "lab")
+]:
+    u = User.query.filter_by(username=uname).first()
+
+    if not u:
+        u = User(username=uname, role=role)
+
+    u.role = role
+    u.set_password(pwd)
+    db.session.add(u)
+
+db.session.commit()
         if not User.query.filter_by(username=uname).first():
             u = User(username=uname, role=role); u.set_password(pwd); db.session.add(u)
     
