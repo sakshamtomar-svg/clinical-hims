@@ -399,24 +399,21 @@ def emr_records():
 @app.cli.command("init-demo")
 def init_demo():
     db.create_all()
-   for uname, pwd, role in [
-    ("demo_patient", "PatientDemo-ChangeMe!", "patient"),
-    ("demo_clinic", "ClinicDemo-ChangeMe!", "clinic"),
-    ("demo_lab", "LabDemo-ChangeMe!", "lab")
-]:
-    u = User.query.filter_by(username=uname).first()
 
-    if not u:
-        u = User(username=uname, role=role)
+    for uname, pwd, role in [
+        ("demo_patient", "PatientDemo-ChangeMe!", "patient"),
+        ("demo_clinic", "ClinicDemo-ChangeMe!", "clinic"),
+        ("demo_lab", "LabDemo-ChangeMe!", "lab"),
+    ]:
+        u = User.query.filter_by(username=uname).first()
 
-    u.role = role
-    u.set_password(pwd)
-    db.session.add(u)
+        if not u:
+            u = User(username=uname, role=role)
 
-db.session.commit()
-        if not User.query.filter_by(username=uname).first():
-            u = User(username=uname, role=role); u.set_password(pwd); db.session.add(u)
-    
+        u.role = role
+        u.set_password(pwd)
+        db.session.add(u)
+
     if Bed.query.count() == 0:
         for ward, cat, bno in [
             ("Fourth Floor", "DOUBLE BEDED", "405-A"),
@@ -424,9 +421,12 @@ db.session.commit()
             ("Basement 2", "ISOLATION", "ISOLATION-1"),
             ("Basement 2", "ISOLATION", "ISOLATION-2"),
             ("First Floor", "CCU", "CCU-01"),
-            ("First Floor", "MICU", "MICU-01")]:
-            db.session.add(Bed(ward_name=ward, bed_category=cat, bed_no=bno, status="Vacant"))
-            
+            ("First Floor", "MICU", "MICU-01"),
+        ]:
+            db.session.add(
+                Bed(ward_name=ward, bed_category=cat, bed_no=bno, status="Vacant")
+            )
+
     db.session.commit()
     print("Database initialized with demo users and ATD beds.")
 
