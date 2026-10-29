@@ -91,8 +91,77 @@ def home():
     <a class="btn" href="/login">Open demo login</a>
     <a class="btn" style="background:white;color:#087e8b;border:1px solid #087e8b" href="/api/fhir/Appointment">FHIR-style API</a></section>
     <section class="grid"><article class="card"><h3>Patient portal</h3><p>Book appointments and track status.</p></article><article class="card"><h3>Clinic dashboard</h3><p>View bookings and update status.</p></article><article class="card"><h3>Shared database</h3><p>Updates appear for authorized users.</p></article></section>
-    <div class="notice">Prototype only. Do not enter real patient information. FHIR-style output is not full FHIR compliance.</div>""")
+    <div class="notice">Prototype only. Do not enter real patient information. FHIR-style output is not full FHIR compliance.</div>""
+    @app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        given_name = request.form.get("given_name", "").strip()
+        family_name = request.form.get("family_name", "").strip()
 
+        if not username or not password or not given_name:
+            flash("Please fill all required fields.")
+            return redirect(url_for("register"))
+
+        if len(password) < 8:
+            flash("Password must be at least 8 characters.")
+            return redirect(url_for("register"))
+
+        if User.query.filter_by(username=username).first():
+            flash("Username already exists. Choose another.")
+            return redirect(url_for("register"))
+
+        import secrets
+        user = User(username=username, role="patient")
+        user.set_password(password)
+        db.session.add(user)
+        db.session.flush()
+
+        patient = Patient(
+            user_id=user.id,
+            identifier="CH-" + secrets.token_hex(4).upper(),
+            given_name=given_name,
+            family_name=family_name
+        )
+        db.session.add(patient)
+        db.session.add(AuditEvent(
+            username=username,
+            action="register",
+            resource="Patient:" + patient.identifier
+        ))
+        db.session.commit()
+
+        session.clear()
+        session["uid"] = user.id
+        flash("Registration successful! Your demo Patient ID is " + patient.identifier)
+        return redirect(url_for("dashboard"))
+
+    return page("""
+    <section class="formcard" style="max-width:550px;margin:auto">
+      <h1>Patient Registration</h1>
+      <p>Create your demo patient account.</p>
+      <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label>First name *</label>
+        <input name="given_name" required maxlength="100">
+
+        <label>Last name</label>
+        <input name="family_name" maxlength="100">
+
+        <label>Username *</label>
+        <input name="username" required maxlength="80">
+
+        <label>Password (minimum 8 characters) *</label>
+        <input name="password" type="password" required minlength="8"
+               autocomplete="new-password">
+
+        <button type="submit">Register Patient</button>
+      </form>
+      <p><a href="/login">Already registered? Log in</a></p>
+    </section>
+    """)
 @app.route("/login", methods=["GET","POST"])
 def login():
     if request.method == "POST":
