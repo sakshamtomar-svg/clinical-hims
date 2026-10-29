@@ -91,8 +91,8 @@ def home():
     <a class="btn" href="/login">Open demo login</a>
     <a class="btn" style="background:white;color:#087e8b;border:1px solid #087e8b" href="/api/fhir/Appointment">FHIR-style API</a></section>
     <section class="grid"><article class="card"><h3>Patient portal</h3><p>Book appointments and track status.</p></article><article class="card"><h3>Clinic dashboard</h3><p>View bookings and update status.</p></article><article class="card"><h3>Shared database</h3><p>Updates appear for authorized users.</p></article></section>
-    <div class="notice">Prototype only. Do not enter real patient information. FHIR-style output is not full FHIR compliance.</div>""
-    @app.route("/register", methods=["GET", "POST"])
+    <div class="notice">Prototype only. Do not enter real patient information. FHIR-style output is not full FHIR compliance.</div>""")
+@app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
